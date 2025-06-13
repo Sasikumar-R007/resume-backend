@@ -20,12 +20,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ==================== MongoDB Connection ====================
-mongoose.connect("mongodb://127.0.0.1:27017/jobportal", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("✅ MongoDB connected"))
-.catch((err) => console.error("❌ MongoDB connection error:", err));
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // ==================== Multer Config ====================
 const storage = multer.diskStorage({
@@ -86,7 +87,9 @@ app.get("/api/records", (req, res) => {
 
   try {
     const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    const recent = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+    const recent = data
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 10);
     res.json(recent);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
